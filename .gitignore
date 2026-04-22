@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+state_backups/revisions/*/*
+!state_backups/revisions/2026-01-15/20260115T093000000000.json

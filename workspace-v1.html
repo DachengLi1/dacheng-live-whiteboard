@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dacheng Workspace V1</title>
+  <style>
+    :root {
+      --bg: #f5efe6;
+      --panel: rgba(255, 255, 255, 0.9);
+      --line: #decdb6;
+      --text: #2c2a28;
+      --muted: #7a7269;
+      --pink: #e96aa4;
+      --blue: #77aee8;
+      --shadow: 0 16px 40px rgba(112, 88, 62, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #fff4fb 0%, rgba(255,244,251,0) 28%),
+        radial-gradient(circle at top right, #edf8ff 0%, rgba(237,248,255,0) 26%),
+        linear-gradient(180deg, #faf6ef 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      width: min(1800px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 12px 0 32px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 10px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.86);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .title { font-size: 18px; font-weight: 700; }
+    .sub { color: var(--muted); font-size: 13px; }
+    .spacer { flex: 1; }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: var(--pink); }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .pane {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .pane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.7);
+    }
+
+    .pane-title {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .pane-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--pink), var(--blue));
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      border: 0;
+      overflow: hidden;
+      background: white;
+    }
+
+    .hint {
+      padding: 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .shell { width: min(100vw - 12px, 1800px); }
+      .topbar { flex-wrap: wrap; }
+      .spacer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div>
+        <div class="title">Workspace V1</div>
+        <div class="sub">单页面滚动版本：上面 calendar / whiteboard，下面 AI monitor。</div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn" id="refreshBtn">Refresh</button>
+      <button class="btn" id="openCalBtn">Open Calendar</button>
+      <button class="btn" id="openAiBtn">Open AI</button>
+    </div>
+
+    <div class="stack">
+      <section class="pane">
+        <div class="pane-header">
+          <span class="pane-title">Calendar / Whiteboard</span>
+          <span class="pane-badge"><span class="dot"></span><span id="calUrlLabel"></span></span>
+        </div>
+        <iframe id="calFrame" scrolling="no"></iframe>
+      </section>
+
+      <div class="hint">往下继续滑就能看到 AI Monitor，不需要分别在两个窗口里滚动。</div>
+
+      <section class="pane">
+        <div class="pane-header">
+          <span class="pane-title">AI Monitor</span>
+          <span class="pane-badge"><span class="dot"></span><span id="aiUrlLabel"></span></span>
+        </div>
+        <iframe id="aiFrame" scrolling="no"></iframe>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const calFrame = document.getElementById('calFrame');
+    const aiFrame = document.getElementById('aiFrame');
+    const base = `${window.location.protocol}//${window.location.host}`;
+    const calUrl = `${base}/`;
+    const aiUrl = `${base}/monitor/`;
+    document.getElementById('calUrlLabel').textContent = calUrl;
+    document.getElementById('aiUrlLabel').textContent = aiUrl;
+    calFrame.src = calUrl;
+    aiFrame.src = aiUrl;
+
+    function computeHeight(doc, minHeight) {
+      const body = doc.body;
+      const html = doc.documentElement;
+      return Math.max(
+        minHeight,
+        body ? body.scrollHeight : 0,
+        body ? body.offsetHeight : 0,
+        html ? html.clientHeight : 0,
+        html ? html.scrollHeight : 0,
+        html ? html.offsetHeight : 0,
+      );
+    }
+
+    function attachAutoResize(frame, minHeight) {
+      let observer = null;
+
+      function resize() {
+        try {
+          const doc = frame.contentDocument || frame.contentWindow.document;
+          if (!doc) return;
+          frame.style.height = computeHeight(doc, minHeight) + 'px';
+        } catch (err) {
+          frame.style.height = minHeight + 'px';
+        }
+      }
+
+      frame.addEventListener('load', () => {
+        resize();
+        try {
+          const doc = frame.contentDocument || frame.contentWindow.document;
+          if (observer) observer.disconnect();
+          observer = new MutationObserver(() => resize());
+          observer.observe(doc.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
+          setInterval(resize, 1500);
+        } catch (err) {
+          setInterval(resize, 1500);
+        }
+      });
+    }
+
+    attachAutoResize(calFrame, 1400);
+    attachAutoResize(aiFrame, 1100);
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      calFrame.src = calUrl + (calUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+      aiFrame.src = aiUrl + (aiUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+    });
+    document.getElementById('openCalBtn').addEventListener('click', () => window.open(calUrl, '_blank'));
+    document.getElementById('openAiBtn').addEventListener('click', () => window.open(aiUrl, '_blank'));
+  </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{
+  "saved_at": "2026-01-15T17:30:00+00:00",
+  "saved_at_local": "2026-01-15T09:30:00-08:00",
+  "date": "2026-01-15",
+  "state": {
+    "deliverables": [
+      {
+        "title": "Finish class prep outline",
+        "deadline": "Today 3 PM"
+      },
+      {
+        "title": "Send trip plan to friends",
+        "deadline": "Tonight"
+      }
+    ],
+    "focusItems": [
+      {
+        "text": "P0: one clean pass on the presentation deck",
+        "status": "⬜",
+        "level": 1
+      },
+      {
+        "text": "P1: update the reading notes and clip 3 takeaways",
+        "status": "⬜",
+        "level": 1
+      },
+      {
+        "text": "P2: keep side quests in parking lot until evening",
+        "status": "⬜",
+        "level": 1
+      }
+    ],
+    "backgroundRuns": [
+      "Collect references for the next project direction",
+      "Keep a lightweight inbox of ideas instead of switching tasks"
+    ],
+    "persistentSection": {
+      "title": "Life goal / north star",
+      "items": [
+        "Build strong research + product taste",
+        "Protect deep-work time",
+        "Ship one meaningful thing each week"
+      ]
+    },
+    "newEvent": "Demo data only — replace with your own state locally.",
+    "delayedItem": "Non-urgent tasks stay parked until the main deliverable is done.",
+    "moveTomorrow": "Review what slipped, then re-plan with fresh priorities tomorrow.",
+    "parkingLot": "Inbox zero is not the goal. Keep extra ideas here.",
+    "dailyReview": "Did today stay focused on the highest-leverage work?",
+    "meta": {
+      "studyArea": "whiteboard demo",
+      "outTime": "",
+      "startTime": "09:00",
+      "studyDuration": "Demo schedule only",
+      "note": "This repository ships with sanitized sample data only."
+    },
+    "monthPlans": {
+      "2026-01-15": "Ship a shareable planner demo and keep the system easy to edit."
+    },
+    "weeklyPlans": {
+      "2026-01-12": "Protect deep work, keep background items visible, and review daily."
+    },
+    "monthCursor": "2026-01",
+    "selectedDate": "2026-01-15"
+  },
+  "digest": "demo-sanitized-sample"
+}

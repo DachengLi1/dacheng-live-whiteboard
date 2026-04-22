@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monday x Dacheng Daily Calendar</title>
+  <style>
+    :root {
+      --desk: #d7c19c;
+      --frame: #8b6a43;
+      --tray: #9b7447;
+      --board: #fbfdff;
+      --ink: #1f2937;
+      --muted: #64748b;
+      --pink: #ec4899;
+      --orange: #f59e0b;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --green: #22c55e;
+      --shadow: rgba(17,24,39,0.15);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #d7c19c 0%, #cfb58b 100%);
+      color: var(--ink);
+      padding: 20px;
+    }
+
+    .layout {
+      max-width: 1780px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(820px, 1fr) 540px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .board-shell {
+      background: var(--frame);
+      border-radius: 28px;
+      box-shadow: 0 24px 60px var(--shadow);
+      padding: 18px 18px 72px;
+      position: relative;
+      min-height: 900px;
+    }
+
+    .board {
+      background: var(--board);
+      border-radius: 18px;
+      border: 4px solid #e5e7eb;
+      min-height: 820px;
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .tray {
+      position: absolute;
+      left: 70px;
+      right: 70px;
+      bottom: 18px;
+      height: 34px;
+      background: var(--tray);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 18px;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.15);
+    }
+
+    .marker {
+      width: 52px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid rgba(17,24,39,0.3);
+    }
+
+    .eraser {
+      margin-left: auto;
+      width: 78px;
+      height: 22px;
+      border-radius: 8px;
+      background: #4b5563;
+      border: 2px solid #1f2937;
+    }
+
+    .board-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: baseline;
+      margin-bottom: 14px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .clock-badge,
+    .companion-badge {
+      border-radius: 16px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.9);
+      border: 2px solid #e5e7eb;
+    }
+
+    .clock-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      min-width: 160px;
+      background: #fff7fb;
+      border-color: #fbcfe8;
+    }
+
+    .clock-time {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.05;
+    }
+
+    .clock-date {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .companion-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #fff1f7 0%, #fdf2f8 100%);
+      border-color: #f9a8d4;
+      box-shadow: 0 8px 20px rgba(236,72,153,0.12);
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      overflow: visible;
+      position: relative;
+      box-shadow: 0 6px 16px rgba(236,72,153,0.28);
+      flex: 0 0 auto;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 999px;
+      border: 2px solid #fff;
+      display: block;
+    }
+
+    .avatar::after {
+      content: '';
+      position: absolute;
+      right: -2px;
+      bottom: -1px;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #22c55e;
+      border: 2px solid #fff;
+    }
+
+    .companion-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #9d174d;
+    }
+
+    .companion-status {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .pink-line {
+      height: 4px;
+      background: repeating-linear-gradient(90deg, var(--pink) 0 10px, #f472b6 10px 16px);
+      border-radius: 999px;
+      margin: 14px 0 18px;
+    }
+
+    .board-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .column {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .panel,
+    .card {
+      border-radius: 18px;
+      background: #fff;
+      border: 3px solid #e5e7eb;
+      padding: 16px;
+      box-shadow: 0 8px 22px rgba(17,24,39,0.04);
+    }
+
+    .card {
+      background: rgba(255,255,255,0.92);
+      border-width: 1px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 14px 34px rgba(17,24,39,0.08);
+    }
+
+    .panel.orange { border-color: #fcd34d; }
+    .panel.blue { border-color: #93c5fd; }
+    .panel.purple { border-color: #c4b5fd; }
+    .panel.green { border-color: #86efac; }
+    .panel.pink { border-color: #f9a8d4; background: linear-gradient(180deg, #fff7fb 0%, #fff 100%); }
+
+    .panel h2,
+    .card h3 {
+      margin: 0 0 10px;
+      letter-spacing: 0.01em;
+    }
+
+    .panel h2 { font-size: 22px; }
+    .card h3 { font-size: 18px; }
+
+    .panel-line {
+      height: 3px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+      opacity: 0.95;
+    }
+
+    .orange .panel-line { background: var(--orange); }
+    .blue .panel-line { background: var(--blue); }
+    .purple .panel-line { background: var(--purple); }
+    .green .panel-line { background: var(--green); }
+    .pink .panel-line { background: var(--pink); }
+
+    .top-anchor {
+      margin-bottom: 18px;
+    }
+
+    .anchor-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .anchor-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .anchor-card {
+      border-radius: 16px;
+      padding: 12px 14px;
+      border: 2px solid #fbcfe8;
+      background: rgba(255,255,255,0.98);
+      box-shadow: 0 8px 20px rgba(236,72,153,0.08);
+      min-height: 92px;
+    }
+
+    .anchor-card.primary {
+      grid-column: span 3;
+      background: linear-gradient(135deg, #fff1f7 0%, #fff8fb 100%);
+      border-color: #f9a8d4;
+    }
+
+    .anchor-card.motto {
+      grid-column: span 3;
+      background: linear-gradient(90deg, #fff7ed 0%, #fffaf5 45%, #fff7ed 100%);
+      border: 2px solid #fdba74;
+      position: relative;
+      padding: 16px 22px 16px 28px;
+      text-align: center;
+      box-shadow: 0 10px 24px rgba(234,88,12,0.10);
+    }
+
+    .anchor-card.motto::before {
+      content: '❝';
+      position: absolute;
+      left: 12px;
+      top: 6px;
+      font-size: 24px;
+      color: #ea580c;
+      opacity: 0.75;
+    }
+
+    .anchor-card.motto .anchor-label {
+      display: none;
+    }
+
+    .anchor-card.motto .anchor-value {
+      font-size: 17px;
+      line-height: 1.6;
+      font-weight: 800;
+      color: #7c2d12;
+    }
+
+    .anchor-card.accent-blue { border-color: #bfdbfe; background: #f8fbff; }
+    .anchor-card.accent-purple { border-color: #ddd6fe; background: #fbfaff; }
+    .anchor-card.accent-green { border-color: #bbf7d0; background: #f7fff9; }
+    .anchor-card.accent-orange { border-color: #fde68a; background: #fffdf6; }
+
+    .anchor-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9d174d;
+      margin-bottom: 6px;
+    }
+
+    .anchor-value {
+      font-size: 15px;
+      line-height: 1.45;
+      font-weight: 700;
+      color: #1f2937;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .anchor-edit-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #9d174d;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 700;
+    }
+
+    .anchor-edit-box {
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.78);
+      border: 1px dashed #f9a8d4;
+    }
+
+    .anchor-items {
+      min-height: 108px;
+      background: rgba(255,255,255,0.92);
+      border-color: #fbcfe8;
+    }
+
+    .panel-note,
+    .card-note,
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    label,
+    .mini-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .mini-label {
+      font-size: 11px;
+      color: #92400e;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #fcfcfd;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 82px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #f9a8d4;
+      box-shadow: 0 0 0 3px rgba(236,72,153,0.12);
+    }
+
+    .deliverables-list,
+    .background-list,
+    .history-list,
+    .calendar-list,
+    .week-list,
+    .focus-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .deliverable-row {
+      display: grid;
+      grid-template-columns: 1fr 128px;
+      gap: 10px;
+      align-items: end;
+      background: #fffaf0;
+      border: 2px solid #fde68a;
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .focus-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .focus-item {
+      --level-indent: 0px;
+      display: grid;
+      grid-template-columns: 20px 1fr 96px 34px;
+      gap: 10px;
+      align-items: center;
+      background: #f8fafc;
+      border: 2px solid #dbeafe;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-left: var(--level-indent);
+      position: relative;
+    }
+
+    .focus-item[data-level="2"] {
+      --level-indent: 28px;
+      background: #fdfcff;
+      border-color: #c7d2fe;
+    }
+
+    .focus-item[data-level="2"]::before {
+      content: '';
+      position: absolute;
+      left: -18px;
+      top: 50%;
+      width: 14px;
+      border-top: 2px solid #93c5fd;
+    }
+
+    .focus-bullet-mark {
+      font-size: 22px;
+      line-height: 1;
+      color: #2563eb;
+      text-align: center;
+    }
+
+    .focus-item-input {
+      border: none !important;
+      background: transparent !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .background-row {
+      background: #f0fdf4;
+      border: 2px solid #bbf7d0;
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .change-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .calendar-head,
+    .mini-head,
+    .history-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .tiny-btn,
+    .ghost-btn,
+    .primary-btn,
+    .remove-btn,
+    .history-btn {
+      border: none;
+      border-radius: 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tiny-btn,
+    .ghost-btn,
+    .history-btn {
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 9px 11px;
+    }
+
+    .tiny-btn {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fee2e2;
+      color: #9d174d;
+    }
+
+    .primary-btn {
+      background: #111827;
+      color: #fff;
+      padding: 11px 14px;
+    }
+
+    .remove-btn {
+      height: 34px;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 14px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .calendar-meta {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .calendar-item,
+    .history-item {
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff7fb;
+      border: 2px solid #fbcfe8;
+    }
+
+    .calendar-item.upcoming {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .calendar-item.done {
+      background: #f8fafc;
+      border-color: #e5e7eb;
+      opacity: 0.88;
+    }
+
+    .calendar-title,
+    .history-date {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .calendar-time,
+    .history-meta {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .calendar-location {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .calendar-empty {
+      border-radius: 14px;
+      padding: 12px;
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .month-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr)) minmax(180px, 1.8fr);
+      gap: 6px;
+      margin-top: 10px;
+      align-items: stretch;
+    }
+
+    .month-weeks {
+      display: grid;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .month-week-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr)) minmax(180px, 1.8fr);
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .week-plan-header,
+    .week-plan-label {
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #4338ca;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .week-deliverable {
+      min-height: 76px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .month-nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .mini-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .mini-weekday,
+    .mini-day {
+      border-radius: 10px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .mini-weekday {
+      background: #f3f4f6;
+      color: #6b7280;
+      padding: 8px 4px;
+      font-weight: 800;
+    }
+
+    .mini-day {
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      min-height: 52px;
+      padding: 6px 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .mini-day.outside {
+      color: #cbd5e1;
+      background: #fafafa;
+    }
+
+    .mini-day.today {
+      background: #fdf2f8;
+      border: 2px solid #f9a8d4;
+      color: #9d174d;
+      font-weight: 800;
+    }
+
+    .mini-day.selected {
+      outline: 2px solid #60a5fa;
+      outline-offset: 1px;
+    }
+
+    .mini-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #ec4899;
+      opacity: 0;
+    }
+
+    .mini-day.has-note .mini-dot {
+      opacity: 1;
+    }
+
+    .selected-date-note {
+      margin-top: 12px;
+    }
+
+    .meta-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .meta-row {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .meta-row.duo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .meta-cell {
+      min-width: 0;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .revision-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .revision-chip {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .footer-note { margin-top: 6px; }
+
+    @media (max-width: 1200px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+    }
+
+    @media (max-width: 940px) {
+      body { padding: 12px; }
+      .board-grid { grid-template-columns: 1fr; }
+      .focus-row { grid-template-columns: 1fr; }
+      .title { font-size: 28px; }
+      .board-header { align-items: flex-start; }
+      .header-right { width: 100%; justify-content: flex-start; }
+      .clock-badge { align-items: flex-start; }
+      .clock-date { text-align: left; }
+      .deliverable-row { grid-template-columns: 1fr; }
+      .meta-row.duo { grid-template-columns: 1fr; }
+      .anchor-preview-grid { grid-template-columns: 1fr; }
+      .anchor-card.primary { grid-column: span 1; }
+      .tray { left: 18px; right: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <section class="board-shell">
+      <div class="board">
+        <div class="board-header">
+          <div>
+            <h1 class="title">Monday x Dacheng Daily Calendar</h1>
+            <div class="subtitle">our little shared calendar · Monday remembers every day with you</div>
+          </div>
+          <div class="header-right">
+            <span id="saveStatus" style="display:none">Loading saved board…</span>
+            <div class="clock-badge">
+              <div class="clock-time" id="liveTime">--:--:--</div>
+              <div class="clock-date" id="liveDate">Loading local time…</div>
+            </div>
+            <div class="companion-badge" aria-label="Monday live companion">
+              <div class="avatar"><img src="./monday-avatar.png" alt="Monday avatar" /></div>
+              <div>
+                <div class="companion-name">Monday</div>
+                <div class="companion-status">live · 陪你推进今天，也帮你记住每一天</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pink-line"></div>
+
+        <div class="panel pink top-anchor">
+          <h2 id="persistentSectionTitleDisplay">PERSISTENT SECTION · LIFE GOAL</h2>
+          <div class="panel-line"></div>
+          <div class="panel-note">放在白板最上面，提醒今天的任务不要把长期战略方向冲掉。</div>
+          <div class="anchor-grid">
+            <div id="persistentSectionPreview" class="anchor-preview-grid"></div>
+            <details>
+              <summary class="anchor-edit-toggle">⚙️ 编辑 persistent section</summary>
+              <div class="anchor-edit-box">
+                <div>
+                  <span class="mini-label">Section title</span>
+                  <input id="persistentSectionTitle" type="text" placeholder="例如：现阶段 life goal" />
+                </div>
+                <div style="margin-top:10px;">
+                  <span class="mini-label">Persistent lines</span>
+                  <textarea id="persistentSectionItems" class="anchor-items" placeholder="每行一条，例如：&#10;Focus on high-impact, high-quality projects&#10;Good role = OpenAI / GDM / Pi / xAI core team"></textarea>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="board-grid">
+          <div class="column">
+            <div class="panel orange">
+              <h2>DELIVERABLES &amp; DEADLINES</h2>
+              <div class="panel-line"></div>
+              <div class="panel-note">先明确今天一定要交什么。这里是主约束，不是待办垃圾堆。</div>
+              <div class="deliverables-list" style="margin-top:12px;">
+                <div class="deliverable-row">
+                  <div>
+                    <span class="mini-label">Deliverable</span>
+                    <input id="deliverable1" type="text" placeholder="例如：boss meeting PPT ready" />
+                  </div>
+                  <div>
+                    <span class="mini-label">Deadline</span>
+                    <input id="deadline1" type="text" placeholder="5:00 PM" />
+                  </div>
+                </div>
+                <div class="deliverable-row">
+                  <div>
+                    <span class="mini-label">Deliverable</span>
+                    <input id="deliverable2" type="text" placeholder="例如：paper proposal draft" />
+                  </div>
+                  <div>
+                    <span class="mini-label">Deadline</span>
+                    <input id="deadline2" type="text" placeholder="6:00 PM" />
+                  </div>
+                </div>
+                <div class="deliverable-row">
+                  <div>
+                    <span class="mini-label">Deliverable</span>
+                    <input id="deliverable3" type="text" placeholder="例如：reading notes / slides / submission" />
+                  </div>
+                  <div>
+                    <span class="mini-label">Deadline</span>
+                    <input id="deadline3" type="text" placeholder="8:00 PM" />
+                  </div>
+                </div>
+                <div class="deliverable-row">
+                  <div>
+                    <span class="mini-label">Deliverable</span>
+                    <input id="deliverable4" type="text" placeholder="例如：night slides / late meeting deck" />
+                  </div>
+                  <div>
+                    <span class="mini-label">Deadline</span>
+                    <input id="deadline4" type="text" placeholder="10:00 PM" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel purple">
+              <h2>CHANGES / PARKING</h2>
+              <div class="panel-line"></div>
+              <div class="change-grid">
+                <div>
+                  <label for="newEvent">New event</label>
+                  <input id="newEvent" type="text" placeholder="临时插入的事 / 新会 / 新需求" />
+                </div>
+                <div>
+                  <label for="delayedItem">Delayed</label>
+                  <input id="delayedItem" type="text" placeholder="哪个任务比预期慢了" />
+                </div>
+                <div>
+                  <label for="moveTomorrow">Move to tomorrow</label>
+                  <input id="moveTomorrow" type="text" placeholder="今天保不住、移到明天的东西" />
+                </div>
+                <div>
+                  <label for="parkingLot">Parking lot</label>
+                  <textarea id="parkingLot" placeholder="想法、blocked item、等待回复、以后再做"></textarea>
+                </div>
+                <div>
+                  <label for="dailyReview">Daily review</label>
+                  <textarea id="dailyReview" placeholder="今天交付了什么？什么滑掉了？明天第一块先做什么？"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="column">
+            <div class="panel blue">
+              <h2>FOCUS STACK</h2>
+              <div class="panel-line"></div>
+              <div class="panel-note">短 bullet，一条一件事；支持两层缩进。</div>
+              <div id="focusList" class="focus-list" style="margin-top:12px;"></div>
+              <div class="toolbar">
+                <button class="ghost-btn" id="addFocusBtn">+ Add item</button>
+                <button class="primary-btn" id="copySummaryBtn">Copy summary</button>
+              </div>
+            </div>
+
+            <div class="panel green">
+              <h2>BACKGROUND RUNS</h2>
+              <div class="panel-line"></div>
+              <div class="panel-note">单独拎出来，不让后台任务污染主 focus stack。</div>
+              <div class="background-list" style="margin-top:12px;">
+                <div class="background-row">
+                  <span class="mini-label">Background 1</span>
+                  <input id="background1" type="text" placeholder="例如：txn experiment monitor" />
+                </div>
+                <div class="background-row">
+                  <span class="mini-label">Background 2</span>
+                  <input id="background2" type="text" placeholder="例如：training / upload / long run" />
+                </div>
+                <div class="background-row">
+                  <span class="mini-label">Background 3</span>
+                  <input id="background3" type="text" placeholder="例如：需要偶尔 check 的任务" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tray">
+        <div class="marker" style="background:#ef4444"></div>
+        <div class="marker" style="background:#3b82f6"></div>
+        <div class="marker" style="background:#10b981"></div>
+        <div class="marker" style="background:#111827"></div>
+        <div class="eraser"></div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="card">
+        <div class="calendar-head">
+          <h3>Google Calendar</h3>
+          <button class="tiny-btn" id="refreshCalendarBtn">Refresh</button>
+        </div>
+        <div class="calendar-meta" id="calendarMeta">Loading calendar…</div>
+        <div class="calendar-list" id="calendarList"></div>
+        <div class="footer-note">这是硬事件参考，不取代你的白板主逻辑。</div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0;">Daily Meta</h3>
+        <div class="card-note">记录当天的学习区域和 NIPS cycle 指标；先记 raw 值，目标参考：出门 510 / 开机 540 / 学习时长 720。</div>
+        <div class="meta-grid">
+          <div class="meta-row duo">
+            <div class="meta-cell">
+              <span class="mini-label">Study area</span>
+              <input id="metaStudyArea" type="text" placeholder="例如：办公室 / 家里 / 咖啡馆 / 图书馆" />
+            </div>
+            <div class="meta-cell">
+              <span class="mini-label">学习时长（目标：720）</span>
+              <input id="metaStudyDuration" type="text" placeholder="例如：480 / 341.5" />
+            </div>
+          </div>
+          <div class="meta-row duo">
+            <div class="meta-cell">
+              <span class="mini-label">出门时间（目标：510）</span>
+              <input id="metaOutTime" type="text" placeholder="例如：650" />
+            </div>
+            <div class="meta-cell">
+              <span class="mini-label">开机时间（目标：540）</span>
+              <input id="metaStartTime" type="text" placeholder="例如：755" />
+            </div>
+          </div>
+          <div class="meta-row">
+            <span class="mini-label">Meta note</span>
+            <textarea id="metaNote" placeholder="例如：今天主要在外面读 paper；回来后只做 draft 收口"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="month-header">
+          <h3 style="margin:0;">Month View</h3>
+          <div class="month-nav">
+            <button class="tiny-btn" id="prevMonthBtn">←</button>
+            <div class="calendar-meta" id="monthTitle" style="margin:0;">Current month</div>
+            <button class="tiny-btn" id="nextMonthBtn">→</button>
+          </div>
+        </div>
+        <div class="card-note">点某一天时，直接跳到那一天最终保存的 dashboard；每一周那一行最右边留一个区域写这周的大 deliverable。</div>
+        <div class="month-weekdays" id="monthWeekdays"></div>
+        <div class="month-weeks" id="monthGrid"></div>
+        <div class="selected-date-note">
+          <label id="selectedDateLabel" for="selectedDateNote">Selected date note</label>
+          <textarea id="selectedDateNote" placeholder="例如：Apr 22 — submit paper / Apr 25 — proposal talk"></textarea>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'dacheng-live-whiteboard-v5';
+    const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    const TODAY_PLAN = {
+      deliverables: [
+        { title: 'PPT ready for possible boss meeting', deadline: '5:00 PM' },
+        { title: 'Paper proposal draft ready to send', deadline: '6:00 PM' },
+        { title: '5 papers read with short notes', deadline: '8:00 PM' }
+      ],
+      focusItems: [
+        { text: 'PPT for boss meeting', status: '🟨' },
+        { text: 'Proposal draft', status: '⬜' },
+        { text: 'Read 5 papers + notes', status: '⬜' },
+        { text: 'Repro entry points', status: '⬜' }
+      ],
+      backgroundRuns: [
+        'Monitor txn experiment and check logs every 30–45 min',
+        '',
+        ''
+      ],
+      newEvent: 'Boss may add a meeting, so PPT should stay demo-ready.',
+      delayedItem: '',
+      moveTomorrow: 'Full reproduction for doc 2 lora + skill 0 if today stays delivery-heavy.',
+      parkingLot: 'Keep blockers for each paper / reproduction here.\nIf a hard event lands, protect PPT + proposal first.',
+      dailyReview: 'Tonight: what shipped, what slipped, and tomorrow’s first focus block.',
+      meta: {
+        studyArea: '',
+        outTime: '',
+        startTime: '',
+        studyDuration: '',
+        note: ''
+      },
+      monthPlans: {},
+      weeklyPlans: {},
+      persistentSection: {
+        title: '现阶段 life goal',
+        items: []
+      },
+      monthCursor: null,
+      selectedDate: null
+    };
+
+    function deepClone(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    const DEFAULT_STATE = deepClone(TODAY_PLAN);
+
+    const els = {
+      deliverable1: document.getElementById('deliverable1'),
+      deadline1: document.getElementById('deadline1'),
+      deliverable2: document.getElementById('deliverable2'),
+      deadline2: document.getElementById('deadline2'),
+      deliverable3: document.getElementById('deliverable3'),
+      deadline3: document.getElementById('deadline3'),
+      deliverable4: document.getElementById('deliverable4'),
+      deadline4: document.getElementById('deadline4'),
+      newEvent: document.getElementById('newEvent'),
+      delayedItem: document.getElementById('delayedItem'),
+      moveTomorrow: document.getElementById('moveTomorrow'),
+      parkingLot: document.getElementById('parkingLot'),
+      dailyReview: document.getElementById('dailyReview'),
+      metaStudyArea: document.getElementById('metaStudyArea'),
+      metaOutTime: document.getElementById('metaOutTime'),
+      metaStartTime: document.getElementById('metaStartTime'),
+      metaStudyDuration: document.getElementById('metaStudyDuration'),
+      metaNote: document.getElementById('metaNote'),
+      background1: document.getElementById('background1'),
+      background2: document.getElementById('background2'),
+      background3: document.getElementById('background3'),
+      focusList: document.getElementById('focusList'),
+      addFocusBtn: document.getElementById('addFocusBtn'),
+      copySummaryBtn: document.getElementById('copySummaryBtn'),
+      saveStatus: document.getElementById('saveStatus'),
+      liveTime: document.getElementById('liveTime'),
+      liveDate: document.getElementById('liveDate'),
+      calendarMeta: document.getElementById('calendarMeta'),
+      calendarList: document.getElementById('calendarList'),
+      refreshCalendarBtn: document.getElementById('refreshCalendarBtn'),
+      monthWeekdays: document.getElementById('monthWeekdays'),
+      monthGrid: document.getElementById('monthGrid'),
+      monthTitle: document.getElementById('monthTitle'),
+      prevMonthBtn: document.getElementById('prevMonthBtn'),
+      nextMonthBtn: document.getElementById('nextMonthBtn'),
+      persistentSectionTitle: document.getElementById('persistentSectionTitle'),
+      persistentSectionItems: document.getElementById('persistentSectionItems'),
+      persistentSectionTitleDisplay: document.getElementById('persistentSectionTitleDisplay'),
+      persistentSectionPreview: document.getElementById('persistentSectionPreview'),
+      selectedDateLabel: document.getElementById('selectedDateLabel'),
+      selectedDateNote: document.getElementById('selectedDateNote')
+    };
+
+    let state = normalizeState(loadLocalState());
+    let saveTimer = null;
+
+    function normalizeState(input) {
+      const base = deepClone(DEFAULT_STATE);
+      const merged = { ...base, ...(input || {}) };
+
+      merged.deliverables = Array.isArray(merged.deliverables) ? merged.deliverables.slice(0, 4) : base.deliverables;
+      while (merged.deliverables.length < 4) merged.deliverables.push({ title: '', deadline: '' });
+      merged.deliverables = merged.deliverables.map(item => ({ title: item?.title || '', deadline: item?.deadline || '' }));
+
+      const focusItems = Array.isArray(merged.focusItems) ? merged.focusItems : [];
+      if (focusItems.length) {
+        merged.focusItems = focusItems.map(item => normalizeFocusItem(item));
+      } else if (typeof merged.focusBullets === 'string' && merged.focusBullets.trim()) {
+        merged.focusItems = merged.focusBullets
+          .split('\n')
+          .map(line => line.replace(/^\s*[•\-*]\s*/, '').trim())
+          .filter(Boolean)
+          .map(text => ({ text, status: '⬜' }));
+      } else {
+        const legacyBlocks = Array.isArray(merged.focusBlocks) ? merged.focusBlocks : [];
+        if (legacyBlocks.length) {
+          merged.focusItems = legacyBlocks
+            .map(block => normalizeFocusItem(block))
+            .filter(item => item.text);
+        } else {
+          merged.focusItems = deepClone(base.focusItems);
+        }
+      }
+
+      merged.backgroundRuns = Array.isArray(merged.backgroundRuns) ? merged.backgroundRuns.slice(0, 3) : base.backgroundRuns;
+      while (merged.backgroundRuns.length < 3) merged.backgroundRuns.push('');
+      merged.backgroundRuns = merged.backgroundRuns.map(item => item || '');
+
+      merged.monthPlans = merged.monthPlans || {};
+      merged.weeklyPlans = merged.weeklyPlans || {};
+      if (!Object.keys(merged.weeklyPlans).length && merged.weekPlan && Object.values(merged.weekPlan).some(Boolean)) {
+        const currentWeekKey = getWeekStartISO(new Date());
+        merged.weeklyPlans[currentWeekKey] = Object.entries(merged.weekPlan)
+          .filter(([, value]) => String(value || '').trim())
+          .map(([day, value]) => `${day}: ${value}`)
+          .join('\n');
+      }
+      const currentWeekKey = getWeekStartISO(new Date());
+      if (!String(merged.weeklyPlans[currentWeekKey] || '').trim()) {
+        merged.weeklyPlans[currentWeekKey] = 'formal method proposal and initial experiments';
+      }
+      merged.monthCursor = merged.monthCursor || getMonthKey(new Date());
+      merged.selectedDate = merged.selectedDate || getTodayISO();
+      merged.persistentSection = {
+        title: String(merged.persistentSection?.title || base.persistentSection?.title || '现阶段 life goal').trim() || '现阶段 life goal',
+        items: Array.isArray(merged.persistentSection?.items)
+          ? merged.persistentSection.items.map(item => String(item || '').trim()).filter(Boolean)
+          : String(merged.persistentSection?.text || '')
+              .split('\n')
+              .map(line => line.replace(/^\s*[•\-*]\s*/, '').trim())
+              .filter(Boolean)
+      };
+      merged.newEvent = merged.newEvent || '';
+      merged.delayedItem = merged.delayedItem || '';
+      merged.moveTomorrow = merged.moveTomorrow || '';
+      merged.parkingLot = merged.parkingLot || '';
+      merged.dailyReview = merged.dailyReview || '';
+      merged.meta = {
+        studyArea: merged.meta?.studyArea || '',
+        outTime: merged.meta?.outTime || merged.meta?.leaveAt || '',
+        startTime: merged.meta?.startTime || merged.meta?.backAt || '',
+        studyDuration: merged.meta?.studyDuration || '',
+        note: merged.meta?.note || ''
+      };
+      return merged;
+    }
+
+    function loadLocalState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : deepClone(DEFAULT_STATE);
+      } catch {
+        return deepClone(DEFAULT_STATE);
+      }
+    }
+
+    function saveLocalState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function normalizeFocusItem(item) {
+      const rawText = String(item?.text || item?.task || item?.label || '');
+      const inferredLevel = rawText.trim().startsWith('↳') ? 2 : 1;
+      const cleanedText = rawText.replace(/^\s*↳\s*/, '').trim();
+      const level = Number(item?.level);
+      return {
+        text: cleanedText,
+        status: item?.status || '⬜',
+        level: level === 2 ? 2 : inferredLevel
+      };
+    }
+
+    function setSaveStatus(text) {
+      els.saveStatus.textContent = text;
+    }
+
+    function formatLocalDate(date) {
+      return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    function updateClock() {
+      const now = new Date();
+      els.liveTime.textContent = now.toLocaleTimeString([], {
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+      els.liveDate.textContent = now.toLocaleDateString([], {
+        weekday: 'short', month: 'short', day: 'numeric'
+      }) + ' · local time';
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+
+    function getTodayISO() {
+      const now = new Date();
+      const tzOffsetMs = now.getTimezoneOffset() * 60 * 1000;
+      return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+    }
+
+    function getWeekStartISO(dateInput) {
+      const date = new Date(dateInput);
+      const diff = (date.getDay() + 6) % 7;
+      date.setHours(12, 0, 0, 0);
+      date.setDate(date.getDate() - diff);
+      return date.toISOString().slice(0, 10);
+    }
+
+    function getMonthKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      return `${year}-${month}`;
+    }
+
+    function parseISODate(dateISO) {
+      const [year, month, day] = String(dateISO).split('-').map(Number);
+      return new Date(year, (month || 1) - 1, day || 1);
+    }
+
+    function formatRecentDayLabel(date) {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+
+    function jumpToDate(dateISO) {
+      if (!dateISO) return;
+      state.selectedDate = dateISO;
+      state.monthCursor = getMonthKey(parseISODate(dateISO));
+      renderMonthView();
+      saveLocalState();
+    }
+
+    async function loadDashboardForDate(dateISO) {
+      if (!dateISO) return;
+      try {
+        const res = await fetch(`/api/state?date=${encodeURIComponent(dateISO)}&t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('state load failed');
+        const data = await res.json();
+        if (data?.state) {
+          state = normalizeState({
+            ...data.state,
+            selectedDate: dateISO,
+            monthCursor: getMonthKey(parseISODate(dateISO))
+          });
+          saveLocalState();
+          render();
+          setSaveStatus(`Loaded ${dateISO} dashboard · last save ${humanSavedAt(data.saved_at_local || data.saved_at)}`);
+          return;
+        }
+      } catch {
+      }
+      jumpToDate(dateISO);
+      setSaveStatus(`No saved dashboard found for ${dateISO} yet`);
+    }
+
+    function parseMonthKey(monthKey) {
+      const [year, month] = monthKey.split('-').map(Number);
+      return new Date(year, month - 1, 1);
+    }
+
+    function humanSavedAt(isoString) {
+      if (!isoString) return 'not saved yet';
+      const date = new Date(isoString);
+      return `${formatLocalDate(date)} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    function render() {
+      renderDeliverables();
+      renderPersistentSection();
+      renderChanges();
+      renderMeta();
+      renderBackgroundRuns();
+      renderFocusItems();
+      renderMonthView();
+      saveLocalState();
+    }
+
+    function renderDeliverables() {
+      const items = state.deliverables;
+      els.deliverable1.value = items[0]?.title || '';
+      els.deadline1.value = items[0]?.deadline || '';
+      els.deliverable2.value = items[1]?.title || '';
+      els.deadline2.value = items[1]?.deadline || '';
+      els.deliverable3.value = items[2]?.title || '';
+      els.deadline3.value = items[2]?.deadline || '';
+      els.deliverable4.value = items[3]?.title || '';
+      els.deadline4.value = items[3]?.deadline || '';
+    }
+
+    function renderPersistentSection() {
+      const title = state.persistentSection?.title || '现阶段 life goal';
+      const items = Array.isArray(state.persistentSection?.items) ? state.persistentSection.items : [];
+      els.persistentSectionTitle.value = title;
+      els.persistentSectionTitleDisplay.textContent = `PERSISTENT SECTION · ${title.toUpperCase()}`;
+      els.persistentSectionItems.value = items.join('\n');
+      els.persistentSectionPreview.innerHTML = buildPersistentPreview(items);
+    }
+
+    function parsePersistentLine(line, idx) {
+      const text = String(line || '').trim();
+      const delimiterMatch = text.match(/^([^:=]{2,40})\s*[:=]\s*(.+)$/);
+      if (delimiterMatch) {
+        const label = delimiterMatch[1].trim();
+        const value = delimiterMatch[2].trim();
+        const key = label.toLowerCase();
+        const kind = key.includes('座右铭') || key.includes('motto')
+          ? 'motto'
+          : (key.includes('strategy') || key.includes('when in doubt'))
+            ? 'strategy'
+            : 'normal';
+        return { label, value, kind };
+      }
+      if (idx === 0) {
+        return { label: '', value: text, kind: 'motto' };
+      }
+      return { label: `Anchor ${idx + 1}`, value: text, kind: 'normal' };
+    }
+
+    function persistentCardClass(label, idx, kind) {
+      if (kind === 'motto') return 'anchor-card motto';
+      if (kind === 'strategy') return 'anchor-card accent-purple';
+      const key = String(label || '').toLowerCase();
+      if (key.includes('goal') || key.includes('target') || key.includes('role')) return 'anchor-card accent-blue';
+      if (key.includes('todo')) return 'anchor-card accent-green';
+      if (key.includes('path')) return 'anchor-card accent-purple';
+      if (key.includes('principle') || key.includes('rule')) return 'anchor-card accent-green';
+      if (idx % 2 === 0) return 'anchor-card accent-orange';
+      return 'anchor-card';
+    }
+
+    function buildPersistentPreview(items) {
+      const cleaned = (items || []).map(item => String(item || '').trim()).filter(Boolean);
+      if (!cleaned.length) {
+        return '<div class="anchor-card primary"><div class="anchor-label">No persistent anchor yet</div><div class="anchor-value">写下你现阶段最重要的战略方向，这样日常任务就不容易把它冲掉。</div></div>';
+      }
+      return cleaned.map((line, idx) => {
+        const parsed = parsePersistentLine(line, idx);
+        const klass = persistentCardClass(parsed.label, idx, parsed.kind);
+        return `
+          <div class="${klass}">
+            <div class="anchor-label">${escapeHtml(parsed.label)}</div>
+            <div class="anchor-value">${escapeHtml(parsed.value)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderChanges() {
+      els.newEvent.value = state.newEvent;
+      els.delayedItem.value = state.delayedItem;
+      els.moveTomorrow.value = state.moveTomorrow;
+      els.parkingLot.value = state.parkingLot;
+      els.dailyReview.value = state.dailyReview;
+    }
+
+    function renderMeta() {
+      els.metaStudyArea.value = state.meta?.studyArea || '';
+      els.metaOutTime.value = state.meta?.outTime || '';
+      els.metaStartTime.value = state.meta?.startTime || '';
+      els.metaStudyDuration.value = state.meta?.studyDuration || '';
+      els.metaNote.value = state.meta?.note || '';
+    }
+
+    function renderBackgroundRuns() {
+      els.background1.value = state.backgroundRuns[0] || '';
+      els.background2.value = state.backgroundRuns[1] || '';
+      els.background3.value = state.backgroundRuns[2] || '';
+    }
+
+    function renderFocusItems() {
+      els.focusList.innerHTML = (state.focusItems || []).map((item, idx) => `
+        <div class="focus-item" data-level="${item.level || 1}">
+          <div class="focus-bullet-mark">•</div>
+          <input class="focus-item-input" type="text" value="${escapeHtml(item.text || '')}" data-idx="${idx}" data-field="text" placeholder="短一点，比如：PPT / proposal / read papers" />
+          <select data-idx="${idx}" data-field="status">
+            ${['⬜', '🟨', '✅', '🔴'].map(status => `<option value="${status}" ${status === item.status ? 'selected' : ''}>${status}</option>`).join('')}
+          </select>
+          <button class="remove-btn" data-remove="${idx}">×</button>
+        </div>
+      `).join('');
+    }
+
+    function renderMonthView() {
+      const monthDate = parseMonthKey(state.monthCursor);
+      const todayISO = getTodayISO();
+      const selectedDate = state.selectedDate;
+      els.monthTitle.textContent = monthDate.toLocaleDateString([], { month: 'long', year: 'numeric' });
+
+      const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+      const gridStart = new Date(firstDay);
+      const jsWeekDay = (firstDay.getDay() + 6) % 7;
+      gridStart.setDate(firstDay.getDate() - jsWeekDay);
+
+      const lastDay = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+      const totalCells = jsWeekDay + lastDay.getDate();
+      const weekCount = Math.ceil(totalCells / 7);
+
+      els.monthWeekdays.innerHTML = [
+        ...WEEK_DAYS.map(label => `<div class="mini-weekday">${label}</div>`),
+        '<div class="week-plan-header">Weekly deliverable</div>'
+      ].join('');
+
+      const weekRows = [];
+      for (let week = 0; week < weekCount; week += 1) {
+        const weekStart = new Date(gridStart);
+        weekStart.setDate(gridStart.getDate() + week * 7);
+        const weekKey = weekStart.toISOString().slice(0, 10);
+        const daysHtml = [];
+
+        for (let dayOffset = 0; dayOffset < 7; dayOffset += 1) {
+          const current = new Date(weekStart);
+          current.setDate(weekStart.getDate() + dayOffset);
+          const dateISO = current.toISOString().slice(0, 10);
+          const isOutside = current.getMonth() !== monthDate.getMonth();
+          const isToday = dateISO === todayISO;
+          const isSelected = dateISO === selectedDate;
+          const hasNote = Boolean((state.monthPlans[dateISO] || '').trim());
+          const classes = ['mini-day'];
+          if (isOutside) classes.push('outside');
+          if (isToday) classes.push('today');
+          if (isSelected) classes.push('selected');
+          if (hasNote) classes.push('has-note');
+          daysHtml.push(`
+            <button class="${classes.join(' ')}" data-date="${dateISO}" title="${escapeHtml(state.monthPlans[dateISO] || '')}">
+              <div>${current.getDate()}</div>
+              <div class="mini-dot"></div>
+            </button>
+          `);
+        }
+
+        weekRows.push(`
+          <div class="month-week-row">
+            ${daysHtml.join('')}
+            <textarea class="week-deliverable" data-week-key="${weekKey}" placeholder="这一周大的 deliverable / 主要推进 / hard deadline">${escapeHtml(state.weeklyPlans[weekKey] || '')}</textarea>
+          </div>
+        `);
+      }
+
+      els.monthGrid.innerHTML = weekRows.join('');
+      els.selectedDateLabel.textContent = `Selected date note · ${selectedDate}`;
+      els.selectedDateNote.value = state.monthPlans[selectedDate] || '';
+    }
+
+    function formatEventTime(start, end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      return startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) +
+        ' – ' +
+        endDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function renderCalendar(snapshot) {
+      const events = snapshot?.events || [];
+      const syncedAt = snapshot?.synced_at ? new Date(snapshot.synced_at) : null;
+      const tz = snapshot?.timezone || 'local';
+      els.calendarMeta.textContent = syncedAt
+        ? `Synced ${syncedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} · ${tz}`
+        : 'Calendar sync unavailable';
+
+      if (!events.length) {
+        els.calendarList.innerHTML = '<div class="calendar-empty">No calendar events found for the current window.</div>';
+        return;
+      }
+
+      els.calendarList.innerHTML = events.map(event => `
+        <div class="calendar-item ${event.status || ''}">
+          <div class="calendar-title">${escapeHtml(event.summary || 'Untitled event')}</div>
+          <div class="calendar-time">${escapeHtml(formatEventTime(event.start, event.end))}</div>
+          <div class="calendar-location">${escapeHtml(event.location || (event.status === 'done' ? 'Earlier today' : 'No location'))}</div>
+        </div>
+      `).join('');
+    }
+
+    async function loadCalendar() {
+      try {
+        const res = await fetch(`./calendar_snapshot.json?t=${Date.now()}`, { cache: 'no-store' });
+        const data = await res.json();
+        renderCalendar(data);
+      } catch {
+        els.calendarMeta.textContent = 'Calendar sync unavailable';
+        els.calendarList.innerHTML = '<div class="calendar-empty">Could not load calendar snapshot right now.</div>';
+      }
+    }
+
+    async function loadServerState() {
+      try {
+        const res = await fetch(`/api/state?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('state load failed');
+        const data = await res.json();
+        if (data?.state) {
+          state = normalizeState(data.state);
+          saveLocalState();
+          render();
+          setSaveStatus(`Loaded server board · last save ${humanSavedAt(data.saved_at_local || data.saved_at)}`);
+        } else {
+          render();
+          setSaveStatus('Using local board · no server backup yet');
+        }
+      } catch {
+        render();
+        setSaveStatus('Offline fallback · using browser copy');
+      }
+    }
+
+    async function pushStateNow() {
+      saveLocalState();
+      try {
+        const res = await fetch('/api/state', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state)
+        });
+        if (!res.ok) throw new Error('save failed');
+        const data = await res.json();
+        setSaveStatus(`Saved ${humanSavedAt(data.saved_at_local || data.saved_at)} · backed up on server`);
+      } catch {
+        setSaveStatus('Saved in browser only · server backup unavailable right now');
+      }
+    }
+
+    function scheduleSave() {
+      saveLocalState();
+      setSaveStatus('Saving changes…');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(pushStateNow, 700);
+    }
+
+    function bindSimpleInput(element, setter) {
+      element.addEventListener('input', event => {
+        setter(event.target.value);
+        scheduleSave();
+      });
+    }
+
+    [
+      [els.deliverable1, 0, 'title'],
+      [els.deadline1, 0, 'deadline'],
+      [els.deliverable2, 1, 'title'],
+      [els.deadline2, 1, 'deadline'],
+      [els.deliverable3, 2, 'title'],
+      [els.deadline3, 2, 'deadline'],
+      [els.deliverable4, 3, 'title'],
+      [els.deadline4, 3, 'deadline']
+    ].forEach(([element, idx, field]) => {
+      element.addEventListener('input', event => {
+        state.deliverables[idx][field] = event.target.value;
+        scheduleSave();
+      });
+    });
+
+    bindSimpleInput(els.newEvent, value => { state.newEvent = value; });
+    bindSimpleInput(els.delayedItem, value => { state.delayedItem = value; });
+    bindSimpleInput(els.moveTomorrow, value => { state.moveTomorrow = value; });
+    bindSimpleInput(els.parkingLot, value => { state.parkingLot = value; });
+    bindSimpleInput(els.dailyReview, value => { state.dailyReview = value; });
+    bindSimpleInput(els.metaStudyArea, value => { state.meta.studyArea = value; });
+    bindSimpleInput(els.metaOutTime, value => { state.meta.outTime = value; });
+    bindSimpleInput(els.metaStartTime, value => { state.meta.startTime = value; });
+    bindSimpleInput(els.metaStudyDuration, value => { state.meta.studyDuration = value; });
+    bindSimpleInput(els.metaNote, value => { state.meta.note = value; });
+    bindSimpleInput(els.persistentSectionTitle, value => {
+      state.persistentSection = state.persistentSection || { title: '现阶段 life goal', items: [] };
+      state.persistentSection.title = value;
+      renderPersistentSection();
+    });
+    bindSimpleInput(els.persistentSectionItems, value => {
+      state.persistentSection = state.persistentSection || { title: '现阶段 life goal', items: [] };
+      state.persistentSection.items = value
+        .split('\n')
+        .map(line => line.replace(/^\s*[•\-*]\s*/, '').trim())
+        .filter(Boolean);
+    });
+    bindSimpleInput(els.background1, value => { state.backgroundRuns[0] = value; });
+    bindSimpleInput(els.background2, value => { state.backgroundRuns[1] = value; });
+    bindSimpleInput(els.background3, value => { state.backgroundRuns[2] = value; });
+
+    els.focusList.addEventListener('input', event => {
+      const idx = Number(event.target.dataset.idx);
+      const field = event.target.dataset.field;
+      if (Number.isNaN(idx) || !field) return;
+      state.focusItems[idx][field] = event.target.value;
+      scheduleSave();
+    });
+
+    els.focusList.addEventListener('change', event => {
+      const idx = Number(event.target.dataset.idx);
+      const field = event.target.dataset.field;
+      if (Number.isNaN(idx) || !field) return;
+      state.focusItems[idx][field] = event.target.value;
+      renderFocusItems();
+      scheduleSave();
+    });
+
+    els.focusList.addEventListener('click', event => {
+      const idx = Number(event.target.dataset.remove);
+      if (Number.isNaN(idx)) return;
+      state.focusItems.splice(idx, 1);
+      renderFocusItems();
+      scheduleSave();
+    });
+
+    els.addFocusBtn.addEventListener('click', () => {
+      state.focusItems.push({ text: '', status: '⬜', level: 1 });
+      renderFocusItems();
+      scheduleSave();
+    });
+
+    els.copySummaryBtn.addEventListener('click', async () => {
+      const lines = [
+        '[whiteboard summary]',
+        `Persistent section · ${state.persistentSection?.title || '现阶段 life goal'}:`,
+        ...((state.persistentSection?.items || []).map(item => `- ${item}`)),
+        '',
+        'Deliverables & deadlines:',
+        ...state.deliverables.map((item, idx) => `${idx + 1}. ${item.title || '-'} @ ${item.deadline || '-'}`),
+        '',
+        'Focus stack:',
+        ...(state.focusItems || []).map(item => `${item.status || '⬜'} ${item.level === 2 ? '  ↳' : '•'} ${item.text || '(empty)'}`),
+        '',
+        'Background runs:',
+        ...state.backgroundRuns.map((item, idx) => `${idx + 1}. ${item || '-'}`),
+        '',
+        `Study area: ${state.meta?.studyArea || '-'}`,
+        `Out time (target 510): ${state.meta?.outTime || '-'}`,
+        `Start time (target 540): ${state.meta?.startTime || '-'}`,
+        `Study duration (target 720): ${state.meta?.studyDuration || '-'}`,
+        `Meta note: ${(state.meta?.note || '-').replaceAll('\n', ' / ')}`,
+        '',
+        `New event: ${state.newEvent || '-'}`,
+        `Delayed: ${state.delayedItem || '-'}`,
+        `Move to tomorrow: ${state.moveTomorrow || '-'}`,
+        `Parking lot: ${(state.parkingLot || '-').replaceAll('\n', ' / ')}`,
+        `Daily review: ${(state.dailyReview || '-').replaceAll('\n', ' / ')}`
+      ];
+      const text = lines.join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        els.copySummaryBtn.textContent = 'Copied ✓';
+        setTimeout(() => { els.copySummaryBtn.textContent = 'Copy summary'; }, 1200);
+      } catch {
+        alert(text);
+      }
+    });
+
+    els.refreshCalendarBtn.addEventListener('click', loadCalendar);
+
+    els.prevMonthBtn.addEventListener('click', () => {
+      const cursor = parseMonthKey(state.monthCursor);
+      cursor.setMonth(cursor.getMonth() - 1);
+      state.monthCursor = getMonthKey(cursor);
+      renderMonthView();
+      saveLocalState();
+    });
+
+    els.nextMonthBtn.addEventListener('click', () => {
+      const cursor = parseMonthKey(state.monthCursor);
+      cursor.setMonth(cursor.getMonth() + 1);
+      state.monthCursor = getMonthKey(cursor);
+      renderMonthView();
+      saveLocalState();
+    });
+
+    els.monthGrid.addEventListener('click', async event => {
+      const button = event.target.closest('[data-date]');
+      if (!button) return;
+      await loadDashboardForDate(button.dataset.date);
+    });
+
+    els.monthGrid.addEventListener('input', event => {
+      const weekKey = event.target.dataset.weekKey;
+      if (!weekKey) return;
+      const value = event.target.value;
+      if (value.trim()) {
+        state.weeklyPlans[weekKey] = value;
+      } else {
+        delete state.weeklyPlans[weekKey];
+      }
+      scheduleSave();
+    });
+
+    els.selectedDateNote.addEventListener('input', event => {
+      const date = state.selectedDate;
+      if (!date) return;
+      const value = event.target.value;
+      if (value.trim()) {
+        state.monthPlans[date] = value;
+      } else {
+        delete state.monthPlans[date];
+      }
+      renderMonthView();
+      scheduleSave();
+    });
+
+    updateClock();
+    setInterval(updateClock, 1000);
+    render();
+    loadServerState();
+    loadCalendar();
+    setInterval(loadCalendar, 30 * 60 * 1000);
+  </script>
+</body>
+</html>
