@@ -1,6 +1,6 @@
 # Dacheng Live Whiteboard
 
-A whiteboard-style daily planning board with a companion avatar, saved state, daily snapshots, and lightweight history.
+A whiteboard-style daily planning board with saved state, daily snapshots, and lightweight history.
 
 ## What is included
 - Whiteboard UI (`index.html`, `workspace-v1.html`)
